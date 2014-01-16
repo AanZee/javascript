@@ -49,8 +49,8 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
     + `undefined`
 
     ```javascript
-    var foo = 1,
-        bar = foo;
+    var foo = 1;
+    var bar = foo;
 
     bar = 9;
 
@@ -63,12 +63,46 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
     + `function`
 
     ```javascript
-    var foo = [1, 2],
-        bar = foo;
+    var foo = [1, 2];
+    var bar = foo;
 
     bar[0] = 9;
 
     console.log(foo[0], bar[0]); // => 9, 9
+    ```
+
+  - Prefer duck typing but here is [solid getType function](http://javascriptweblog.wordpress.com/2011/08/08/fixing-the-javascript-typeof-operator/)
+
+    ```javascript
+    Object.toType = function(obj) {
+      return ({}).toString.call(obj).match(/\s([a-z|A-Z]+)/)[1].toLowerCase();
+    }
+
+    // Result
+    toType({a: 4}); //"object"
+    toType([1, 2, 3]); //"array"
+    (function() {console.log(toType(arguments))})(); //arguments
+    toType(new ReferenceError); //"error"
+    toType(new Date); //"date"
+    toType(/a-z/); //"regexp"
+    toType(Math); //"math"
+    toType(JSON); //"json"
+    toType(new Number(4)); //"number"
+    toType(new String("abc")); //"string"
+    toType(new Boolean(true)); //"boolean"
+
+    // instead of the broken *typeof*
+    typeof {a: 4}; //"object"
+    typeof [1, 2, 3]; //"object"
+    (function() {console.log(typeof arguments)})(); //object
+    typeof new ReferenceError; //"object"
+    typeof new Date; //"object"
+    typeof /a-z/; //"object"
+    typeof Math; //"object"
+    typeof JSON; //"object"
+    typeof new Number(4); //"object"
+    typeof new String("abc"); //"object"
+    typeof new Boolean(true); //"object"
     ```
 
     **[[⬆]](#TOC)**
@@ -149,9 +183,9 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
   - When you need to copy an array use Array#slice. [jsPerf](http://jsperf.com/converting-arguments-to-an-array/7)
 
     ```javascript
-    var len = items.length,
-        itemsCopy = [],
-        i;
+    var len = items.length;
+    var itemsCopy = [];
+    var i;
 
     // bad
     for (i = 0; i < len; i++) {
@@ -165,9 +199,9 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
   - To convert an array-like object to an array, use Array#slice.
 
     ```javascript
-    function trigger() {
+    function trigger () {
       var args = Array.prototype.slice.call(arguments);
-      ...
+      // args is now a real array with array methods
     }
     ```
 
@@ -220,10 +254,7 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
   - When programatically building up a string, use Array#join instead of string concatenation. Mostly for IE: [jsPerf](http://jsperf.com/string-vs-array-concat/2).
 
     ```javascript
-    var items,
-        messages,
-        length,
-        i;
+    var items, messages, length, i;
 
     messages = [{
         state: 'success',
@@ -239,7 +270,7 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
     length = messages.length;
 
     // bad
-    function inbox(messages) {
+    function inbox (messages) {
       items = '<ul>';
 
       for (i = 0; i < length; i++) {
@@ -250,7 +281,7 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
     }
 
     // good
-    function inbox(messages) {
+    function inbox (messages) {
       items = [];
 
       for (i = 0; i < length; i++) {
@@ -266,21 +297,46 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
 
 ## <a name='functions'>Functions</a>
 
+  - Use a space when defining functions, and none when invoking functions. [Found in Douglas Crockford's style guide](http://javascript.crockford.com/code.html):
+
+    ```javascript
+    // bad
+    var query = function() {
+      // stuff..
+    };
+
+    // bad
+    function inbox() {
+      // stuff..
+    }
+
+    // Bad
+    query ();
+
+    // Good
+    var query = function () {
+
+    };
+
+    // Good
+    query();
+    ```
+
   - Function expressions:
 
     ```javascript
     // anonymous function expression
-    var anonymous = function() {
+    var anonymous = function () {
       return true;
     };
 
     // named function expression
-    var named = function named() {
+    var named = function named () {
       return true;
     };
 
     // immediately-invoked function expression (IIFE)
-    (function() {
+    (function () {
       console.log('Welcome to the Internet. Please follow me.');
     })();
     ```
@@ -298,8 +354,8 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
 
     // good
     var test;
-    if (currentUser) {
-      test = function test() {
+    if (isCurrentUser) {
+      test = function test () {
         console.log('Yup.');
       };
     }
@@ -309,12 +365,12 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
 
     ```javascript
     // bad
-    function nope(name, options, arguments) {
+    function nope (name, options, arguments) {
       // ...stuff...
     }
 
     // good
-    function yup(name, options, args) {
+    function yup (name, options, args) {
       // ...stuff...
     }
     ```
@@ -370,15 +426,52 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
     var superPower = new SuperPower();
     ```
 
-  - Use one `var` declaration for multiple variables and declare each variable on a newline.
+  - Use is/has/are before boolean names
 
     ```javascript
-    // bad
+      // bad
+      var active = true;
+
+      // bad
+      item.children = true;
+
+      // bad
+      listItems.shown = true
+
+      // bad
+      if (active && item.hasChildren && listItems.shown) {
+        // stuff..
+      }
+
+      // good
+      var isActive = true;
+
+      // good
+      item.hasChildren = true;
+
+      // good
+      listItems.areShown = true;
+
+      // also good
+      // to show it's a boolean is more important than the prefix
+      listItems.isShown = true;
+
+      // good
+      if (isActive && item.hasChildren && listItems.areShown) {
+        // stuff..
+      }
+    ```
+
+  - Instead of AirBnB's one `var` declaration for multiple variables. [Use multiple line var declerations](http://benalman.com/news/2012/05/multiple-var-statements-javascript/) because of better maintenance, [ASI](http://benalman.com/news/2012/04/semicolons-required-in-javascript/), indentation, mult-line expressions, comments and minification.
+
+    ```javascript
+    // Good (instead of bad)
     var items = getItems();
     var goSportsTeam = true;
     var dragonball = 'z';
+    var foo, bar, baz;
 
-    // good
+    // Bad (instead of good)
     var items = getItems(),
         goSportsTeam = true,
         dragonball = 'z';
@@ -388,29 +481,27 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
 
     ```javascript
     // bad
-    var i, len, dragonball,
-        items = getItems(),
-        goSportsTeam = true;
+    var i, len, dragonball;
+    var items = getItems();
+    var goSportsTeam = true;
 
     // bad
-    var i, items = getItems(),
-        dragonball,
-        goSportsTeam = true,
-        len;
+    var i, items = getItems();
+    var dragonball;
+    var goSportsTeam = true;
+    var len;
 
     // good
-    var items = getItems(),
-        goSportsTeam = true,
-        dragonball,
-        length,
-        i;
+    var items = getItems();
+    var goSportsTeam = true;
+    var dragonball, length, i;
     ```
 
   - Assign variables at the top of their scope. This helps avoid issues with variable declaration and assignment hoisting related issues.
 
     ```javascript
     // bad
-    function() {
+    function () {
       test();
       console.log('doing stuff..');
 
@@ -426,7 +517,7 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
     }
 
     // good
-    function() {
+    function () {
       var name = getName();
 
       test();
@@ -442,7 +533,7 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
     }
 
     // bad
-    function() {
+    function () {
       var name = getName();
 
       if (!arguments.length) {
@@ -453,7 +544,7 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
     }
 
     // good
-    function() {
+    function () {
       if (!arguments.length) {
         return false;
       }
@@ -474,7 +565,7 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
     ```javascript
     // we know this wouldn't work (assuming there
     // is no notDefined global variable)
-    function example() {
+    function example () {
       console.log(notDefined); // => throws a ReferenceError
     }
 
@@ -482,7 +573,7 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
     // reference the variable will work due to
     // variable hoisting. Note: the assignment
     // value of `true` is not hoisted.
-    function example() {
+    function example () {
       console.log(declaredButNotAssigned); // => undefined
       var declaredButNotAssigned = true;
     }
@@ -490,7 +581,7 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
     // The interpreter is hoisting the variable
     // declaration to the top of the scope.
     // Which means our example could be rewritten as:
-    function example() {
+    function example () {
       var declaredButNotAssigned;
       console.log(declaredButNotAssigned); // => undefined
       declaredButNotAssigned = true;
@@ -500,12 +591,12 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
   - Anonymous function expressions hoist their variable name, but not the function assignment.
 
     ```javascript
-    function example() {
+    function example () {
       console.log(anonymous); // => undefined
 
       anonymous(); // => TypeError anonymous is not a function
 
-      var anonymous = function() {
+      var anonymous = function () {
         console.log('anonymous function expression');
       };
     }
@@ -514,7 +605,7 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
   - Named function expressions hoist the variable name, not the function name or the function body.
 
     ```javascript
-    function example() {
+    function example () {
       console.log(named); // => undefined
 
       named(); // => TypeError named is not a function
@@ -528,7 +619,7 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
 
     // the same is true when the function name
     // is the same as the variable name.
-    function example() {
+    function example () {
       console.log(named); // => undefined
 
       named(); // => TypeError named is not a function
@@ -542,10 +633,10 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
   - Function declarations hoist their name and the function body.
 
     ```javascript
-    function example() {
+    function example () {
       superPower(); // => Flying
 
-      function superPower() {
+      function superPower () {
         console.log('Flying');
       }
     }
@@ -576,7 +667,7 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
     }
     ```
 
-  - Use shortcuts.
+  - Use [truthey and falsey](http://javascriptweblog.wordpress.com/2011/02/07/truth-equality-and-javascript/#more-2108) shortcuts.
 
     ```javascript
     // bad
@@ -586,7 +677,7 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
 
     // good
     if (name) {
-      // ...stuff...
+      // name is truthey
     }
 
     // bad
@@ -596,7 +687,7 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
 
     // good
     if (collection.length) {
-      // ...stuff...
+      // collection.length is truthey
     }
     ```
 
@@ -615,6 +706,7 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
       return false;
 
     // good
+    // Also use this to return early in functions
     if (test) return false;
 
     // good
@@ -623,10 +715,10 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
     }
 
     // bad
-    function() { return false; }
+    function () { return false; }
 
     // good
-    function() {
+    function () {
       return false;
     }
     ```
@@ -645,7 +737,7 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
     //
     // @param <String> tag
     // @return <Element> element
-    function make(tag) {
+    function make (tag) {
 
       // ...stuff...
 
@@ -660,7 +752,7 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
      * @param <String> tag
      * @return <Element> element
      */
-    function make(tag) {
+    function make (tag) {
 
       // ...stuff...
 
@@ -672,14 +764,14 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
 
     ```javascript
     // bad
-    var active = true;  // is current tab
+    var isActive = true;  // is current tab
 
     // good
     // is current tab
-    var active = true;
+    var isActive = true;
 
     // bad
-    function getType() {
+    function getType () {
       console.log('fetching type...');
       // set the default type to 'no type'
       var type = this._type || 'no type';
@@ -688,7 +780,7 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
     }
 
     // good
-    function getType() {
+    function getType () {
       console.log('fetching type...');
 
       // set the default type to 'no type'
@@ -703,7 +795,7 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
   - Use `// FIXME:` to annotate problems
 
     ```javascript
-    function Calculator() {
+    function Calculator () {
 
       // FIXME: shouldn't use a global here
       total = 0;
@@ -715,7 +807,7 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
   - Use `// TODO:` to annotate solutions to problems
 
     ```javascript
-    function Calculator() {
+    function Calculator () {
 
       // TODO: total should be configurable by an options param
       this.total = 0;
@@ -733,17 +825,17 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
 
     ```javascript
     // bad
-    function() {
+    function () {
     ∙∙∙∙var name;
     }
 
     // bad
-    function() {
+    function () {
     ∙var name;
     }
 
     // good
-    function() {
+    function () {
     ∙∙var name;
     }
     ```
@@ -751,12 +843,12 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
 
     ```javascript
     // bad
-    function test(){
+    function test (){
       console.log('test');
     }
 
     // good
-    function test() {
+    function test () {
       console.log('test');
     }
 
@@ -776,14 +868,14 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
 
     ```javascript
     // bad
-    (function(global) {
+    (function (global) {
       // ...stuff...
     })(this);
     ```
 
     ```javascript
     // good
-    (function(global) {
+    (function (global) {
       // ...stuff...
     })(this);
 
@@ -903,6 +995,8 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
     })();
 
     // good
+    // Add a semicolon before to terminate previous scripts
+    // useful for first level encapsulation
     ;(function() {
       var name = 'Skywalker';
       return name;
@@ -993,12 +1087,12 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
 
     ```javascript
     // bad
-    function q() {
+    function q () {
       // ...stuff...
     }
 
     // good
-    function query() {
+    function query () {
       // ..stuff..
     }
     ```
@@ -1017,7 +1111,7 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
 
     // good
     var thisIsMyObject = {};
-    function thisIsMyFunction() {};
+    function thisIsMyFunction () {};
     var user = new User({
       name: 'Bob Parr'
     });
@@ -1027,7 +1121,7 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
 
     ```javascript
     // bad
-    function user(options) {
+    function user (options) {
       this.name = options.name;
     }
 
@@ -1036,7 +1130,7 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
     });
 
     // good
-    function User(options) {
+    function User (options) {
       this.name = options.name;
     }
 
@@ -1045,7 +1139,7 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
     });
     ```
 
-  - Use a leading underscore `_` when naming private properties
+  - Use a leading underscore `_` when naming private properties. It is just a convention, underscores don't make it a private property.
 
     ```javascript
     // bad
@@ -1068,17 +1162,17 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
     }
 
     // bad
-    function() {
+    function () {
       var that = this;
-      return function() {
+      return function () {
         console.log(that);
       };
     }
 
     // good
-    function() {
+    function () {
       var _this = this;
-      return function() {
+      return function () {
         console.log(_this);
       };
     }
@@ -1088,12 +1182,12 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
 
     ```javascript
     // bad
-    var log = function(msg) {
+    var log = function (msg) {
       console.log(msg);
     };
 
     // good
-    var log = function log(msg) {
+    var log = function log (msg) {
       console.log(msg);
     };
     ```
@@ -1124,12 +1218,12 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
 
     ```javascript
     // bad
-    if (!dragon.age()) {
+    if ( ! dragon.age()) {
       return false;
     }
 
     // good
-    if (!dragon.hasAge()) {
+    if ( ! dragon.hasAge()) {
       return false;
     }
     ```
@@ -1137,17 +1231,17 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
   - It's okay to create get() and set() functions, but be consistent.
 
     ```javascript
-    function Jedi(options) {
+    function Jedi (options) {
       options || (options = {});
       var lightsaber = options.lightsaber || 'blue';
       this.set('lightsaber', lightsaber);
     }
 
-    Jedi.prototype.set = function(key, val) {
+    Jedi.prototype.set = function (key, val) {
       this[key] = val;
     };
 
-    Jedi.prototype.get = function(key) {
+    Jedi.prototype.get = function (key) {
       return this[key];
     };
     ```
@@ -1160,27 +1254,27 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
   - Assign methods to the prototype object, instead of overwriting the prototype with a new object. Overwriting the prototype makes inheritance impossible: by resetting the prototype you'll overwrite the base!
 
     ```javascript
-    function Jedi() {
+    function Jedi () {
       console.log('new jedi');
     }
 
     // bad
     Jedi.prototype = {
-      fight: function fight() {
+      fight: function fight () {
         console.log('fighting');
       },
 
-      block: function block() {
+      block: function block () {
         console.log('blocking');
       }
     };
 
     // good
-    Jedi.prototype.fight = function fight() {
+    Jedi.prototype.fight = function fight () {
       console.log('fighting');
     };
 
-    Jedi.prototype.block = function block() {
+    Jedi.prototype.block = function block () {
       console.log('blocking');
     };
     ```
@@ -1189,12 +1283,12 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
 
     ```javascript
     // bad
-    Jedi.prototype.jump = function() {
-      this.jumping = true;
+    Jedi.prototype.jump = function () {
+      this.isJumping = true;
       return true;
     };
 
-    Jedi.prototype.setHeight = function(height) {
+    Jedi.prototype.setHeight = function (height) {
       this.height = height;
     };
 
@@ -1203,12 +1297,12 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
     luke.setHeight(20) // => undefined
 
     // good
-    Jedi.prototype.jump = function() {
-      this.jumping = true;
+    Jedi.prototype.jump = function () {
+      this.isJumping = true;
       return this;
     };
 
-    Jedi.prototype.setHeight = function(height) {
+    Jedi.prototype.setHeight = function (height) {
       this.height = height;
       return this;
     };
@@ -1223,16 +1317,16 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
   - It's okay to write a custom toString() method, just make sure it works successfully and causes no side effects.
 
     ```javascript
-    function Jedi(options) {
+    function Jedi (options) {
       options || (options = {});
       this.name = options.name || 'no name';
     }
 
-    Jedi.prototype.getName = function getName() {
+    Jedi.prototype.getName = function getName () {
       return this.name;
     };
 
-    Jedi.prototype.toString = function toString() {
+    Jedi.prototype.toString = function toString () {
       return 'Jedi - ' + this.getName();
     };
     ```
@@ -1250,7 +1344,7 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
 
     ...
 
-    $(this).on('listingUpdated', function(e, listingId) {
+    $(this).on('listingUpdated', function (e, listingId) {
       // do something with listingId
     });
     ```
@@ -1263,7 +1357,7 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
 
     ...
 
-    $(this).on('listingUpdated', function(e, data) {
+    $(this).on('listingUpdated', function (e, data) {
       // do something with data.listingId
     });
     ```
@@ -1286,11 +1380,11 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
 
       var previousFancyInput = global.FancyInput;
 
-      function FancyInput(options) {
+      function FancyInput (options) {
         this.options = options || {};
       }
 
-      FancyInput.noConflict = function noConflict() {
+      FancyInput.noConflict = function noConflict () {
         global.FancyInput = previousFancyInput;
         return FancyInput;
       };
@@ -1318,7 +1412,7 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
 
     ```javascript
     // bad
-    function setSidebar() {
+    function setSidebar () {
       $('.sidebar').hide();
 
       // ...stuff...
@@ -1329,7 +1423,7 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
     }
 
     // good
-    function setSidebar() {
+    function setSidebar () {
       var $sidebar = $('.sidebar');
       $sidebar.hide();
 
@@ -1376,7 +1470,7 @@ Forked from the excellent [Airbnb JavaScript Style Guide](https://github.com/air
   - **Yup.**
 
     ```javascript
-    function() {
+    function () {
       return true;
     }
     ```
